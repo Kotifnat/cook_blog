@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+{% block content %}
+    {#    <div class="col-lg-8 col-md-8">#}
+    <div class="row allposts">
+        {% for post in posts %}
+            <div class="col-lg-6 col-md-6 col-sm-6 post {% if forloop.last %}last{% endif %}"
+                 data-postid= {{ post.id }}>
+                <div class="categories__post__item">
+                    <div class="categories__post__item__pic small__item set-bg"
+                         data-setbg="{{ post.image.url }}"
+                         style="background-image: {{ post.image.url }}">
+                        <div class="post__meta">
+                            <h4>{{ post.created_at | date:"d" }} </h4>
+                            <span>{{ post.created_at | date:"M" }} </span>
+                        </div>
+                    </div>
+                    <div class="categories__post__item__text">
+                        <span class="post__label">{{ post.category }}</span>
+                        <h3><a href={{ post.get_absolute_url }}>{{ post.title }}</a></h3>
+                        <ul class="post__widget">
+                            <li>by <span>{{ post.author }}</span></li>
+                            <li>3 min read</li>
+                            <li>20 Comment</li>
+                        </ul>
+                        <p>{{ post.text|truncatewords:40 }}</p>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+    <div class="col-lg-12 text-center">
+        <!--Pagination-->
+        <nav aria-label="Page navigation example">
+            <ul class="pagination justify-content-center">
+                {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" style="color: #f4952f" href="?page={{ page_obj.previous_page_number }}">Previous</a>
+                    </li>
+                {% else %}
+                    <li class="page-item disabled">
+                        <a class="page-link" href="#" tabindex="-1" aria-disabled="true">Previous</a>
+                    </li>
+                {% endif %}
+                {% for i in page_obj.paginator.page_range %}
+                    {% if page_obj.number == i %}
+                        <li class="page-item active" aria-current="page">
+              <span class="page-link" style="background-color: #f4952f">
+                {{ i }}
+                <span class="sr-only">(current)</span>
+              </span>
+                        </li>
+                    {% else %}
+                        <li class="page-item"><a class="page-link" style="color: #f4952f" href="?page={{ i }}">{{ i }}</a></li>
+                    {% endif %}
+                {% endfor %}
+                {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" style="color: #f4952f" href="?page={{ page_obj.next_page_number }}">Next</a>
+                    </li>
+                {% else %}
+                    <li class="page-item disabled">
+                        <a class="page-link" href="#" tabindex="-1" aria-disabled="true">Next</a>
+                    </li>
+                {% endif %}
+            </ul>
+        </nav>
+    </div>
+{% endblock %}
