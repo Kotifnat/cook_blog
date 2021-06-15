@@ -27,3 +27,4 @@ doc
 home.rst
 make.bat
 Makefile
+/blog/migrations/
