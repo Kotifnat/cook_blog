@@ -1,3 +1,4 @@
+from ckeditor.fields import RichTextField
 from django.contrib.auth.models import User
 from django.db import models
 from django.urls import reverse
@@ -5,12 +6,12 @@ from mptt.models import MPTTModel, TreeForeignKey
 
 
 def get_upload_path(instance, filename):
-    return f"articles/user_{instance.author.id}/{filename}"
+    return f"articles/user_{instance.author.id}/{instance.title}/{filename}"
 
 
 class Category(MPTTModel):
-    name = models.CharField("Название", max_length=100)
-    slug = models.CharField("Slug", max_length=100)
+    name = models.CharField("Название", max_length=100, unique=True)
+    slug = models.SlugField(unique=True)
     parent = TreeForeignKey(
         'self',
         related_name='children',
@@ -29,7 +30,7 @@ class Category(MPTTModel):
 
 class Tag(models.Model):
     name = models.CharField("Название", max_length=100)
-    slug = models.CharField("Slug", max_length=100)
+    slug = models.SlugField(unique=True)
 
     class Meta:
         verbose_name = 'Тег'
@@ -40,12 +41,14 @@ class Tag(models.Model):
 
 
 class Post(models.Model):
-    author = models.ForeignKey(User, related_name='posts', on_delete=models.CASCADE, verbose_name='Автор')
+    author = models.ForeignKey(User, to_field='username',related_name='posts', on_delete=models.CASCADE, verbose_name='Автор')
     title = models.CharField("Название", max_length=200)
+    slug = models.SlugField(unique=True)
     text = models.TextField("Содержание")
     image = models.ImageField(upload_to=get_upload_path)
     category = models.ForeignKey(
         Category,
+        to_field='name',
         related_name='post',
         on_delete=models.SET_NULL,
         null=True,
@@ -53,7 +56,6 @@ class Post(models.Model):
     )
     tags = models.ManyToManyField(Tag, related_name='post')
     created_at = models.DateTimeField("Время создания", auto_now_add=True)
-    slug = models.CharField("Slug", max_length=200, default='')
 
     class Meta:
         verbose_name = 'Пост'
@@ -71,11 +73,11 @@ class Post(models.Model):
 
 class Recipe(models.Model):
     name = models.CharField("Название рецепта", max_length=100)
-    serves = models.CharField(max_length=50)
+    serves = models.CharField("Размер порции(кол-во персон)", max_length=50)
     prep_time = models.PositiveIntegerField("Время подготовки", default=0)
     cook_time = models.PositiveIntegerField("Время готовки", default=0)
-    ingredients = models.TextField("Ингредиенты")
-    direction = models.TextField("Процесс приготовления")
+    ingredients = RichTextField("Ингредиенты")
+    directions = RichTextField("Процесс приготовления")
     post = models.ForeignKey(
         Post,
         related_name='recipes',

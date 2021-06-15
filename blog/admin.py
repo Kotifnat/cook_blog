@@ -10,11 +10,13 @@ class RecipeInline(admin.TabularInline):
 
 @admin.register(models.Category)
 class CategoryAdmin(MPTTModelAdmin):
+    prepopulated_fields = {'slug': ('name',)}
     pass
 
 
 @admin.register(models.Tag)
 class TagAdmin(admin.ModelAdmin):
+    prepopulated_fields = {'slug': ('name',)}
     pass
 
 
@@ -24,6 +26,7 @@ class PostAdmin(admin.ModelAdmin):
     inlines = [
         RecipeInline,
     ]
+    prepopulated_fields = {'slug': ('title',)}
 
 
 @admin.register(models.Recipe)
