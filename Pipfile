@@ -8,6 +8,7 @@ django = "*"
 pillow = "*"
 django-mptt = "*"
 django-ckeditor = "*"
+django-cleanup = "*"
 
 [dev-packages]
 

@@ -1,6 +1,8 @@
 from ckeditor.fields import RichTextField
 from django.contrib.auth.models import User
 from django.db import models
+from django.core import validators
+from django.utils.text import slugify
 from django.urls import reverse
 from mptt.models import MPTTModel, TreeForeignKey
 
@@ -11,7 +13,7 @@ def get_upload_path(instance, filename):
 
 class Category(MPTTModel):
     name = models.CharField("Название", max_length=100, unique=True)
-    slug = models.SlugField(unique=True)
+    slug = models.SlugField(unique=True, help_text="Не трогайте это поле!")
     parent = TreeForeignKey(
         'self',
         related_name='children',
@@ -27,10 +29,14 @@ class Category(MPTTModel):
     def __str__(self):
         return self.name
 
+    def save(self, *args, **kwargs):
+        self.slug = slugify(self.name)
+        super().save(*args, **kwargs)
+
 
 class Tag(models.Model):
     name = models.CharField("Название", max_length=100)
-    slug = models.SlugField(unique=True)
+    slug = models.SlugField(unique=True, help_text="Не трогайте это поле!")
 
     class Meta:
         verbose_name = 'Тег'
@@ -39,10 +45,17 @@ class Tag(models.Model):
     def __str__(self):
         return self.name
 
+    def save(self, *args, **kwargs):
+        self.slug = slugify(self.name)
+        super().save(*args, **kwargs)
+
 
 class Post(models.Model):
-    author = models.ForeignKey(User, to_field='username',related_name='posts', on_delete=models.CASCADE, verbose_name='Автор')
-    title = models.CharField("Название", max_length=200)
+    author = models.ForeignKey(User, to_field='username', related_name='posts', on_delete=models.CASCADE,
+                               verbose_name='Автор', )
+    title = models.CharField("Название", max_length=200,
+                             validators=[validators.MinLengthValidator(4)],
+                             )
     slug = models.SlugField(unique=True)
     text = models.TextField("Содержание")
     image = models.ImageField(upload_to=get_upload_path)
@@ -60,6 +73,9 @@ class Post(models.Model):
     class Meta:
         verbose_name = 'Пост'
         verbose_name_plural = 'Посты'
+        constraints = (
+            models.UniqueConstraint(fields=['title', ], name='unique_title'),
+        )
 
     def __str__(self):
         return self.title
@@ -69,6 +85,10 @@ class Post(models.Model):
 
     def get_recipes(self):
         return self.recipes.all()
+
+    def save(self, *args, **kwargs):
+        self.slug = slugify(self.title)
+        super().save(*args, **kwargs)
 
 
 class Recipe(models.Model):

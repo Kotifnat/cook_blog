@@ -3,30 +3,31 @@ from . import models
 from mptt.admin import MPTTModelAdmin
 
 
-class RecipeInline(admin.TabularInline):
+class RecipeInline(admin.StackedInline):
     model = models.Recipe
-    extra = 0
+    extra = 1
 
 
 @admin.register(models.Category)
 class CategoryAdmin(MPTTModelAdmin):
-    prepopulated_fields = {'slug': ('name',)}
+    readonly_fields = ('slug',)
     pass
 
 
 @admin.register(models.Tag)
 class TagAdmin(admin.ModelAdmin):
-    prepopulated_fields = {'slug': ('name',)}
+    readonly_fields = ('slug',)
     pass
 
 
 @admin.register(models.Post)
 class PostAdmin(admin.ModelAdmin):
+    readonly_fields = ('slug',)
     list_display = ["title", 'category', 'author', 'created_at']
     inlines = [
         RecipeInline,
     ]
-    prepopulated_fields = {'slug': ('title',)}
+    save_on_top = True
 
 
 @admin.register(models.Recipe)
